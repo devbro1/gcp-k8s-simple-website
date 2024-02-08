@@ -6,4 +6,4 @@ COPY ./todo-website/requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY ./todo-website ./
-CMD [ "python", "./app.py" ]
+CMD [ "flask", "run" ]

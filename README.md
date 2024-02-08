@@ -10,9 +10,12 @@
 
 # create website docker image
 
-command to build the image
+command to build the image and running it as a container
 ```
-docker build -t web_image -f web.Dockerfile .
+docker build -t web_todo_image -f web.Dockerfile .
+docker stop web_todo_container
+docker rm web_todo_container
+docker run --name web_todo_container -d -p 85:85 -e FLASK_ENV=development  -e FLASK_APP=app.py -e FLASK_RUN_HOST=0.0.0.0 -e FLASK_RUN_PORT=85 web_todo_image
 ```
 
 for local development you need to install packages:
@@ -20,10 +23,12 @@ for local development you need to install packages:
 pip3 install -r requirements.txt -t ./
 ```
 
+NOTE in dev env, it uses sqlite it can be changed to postgresql with `DATABASE_URL` env var
+
 environment variables to set:
 ```
-export DATABASE_URL=postgresql+psycopg2://user:password@hostname/database_name
 export DATABASE_URL=postgresql://user:password@hostname/database_name
 export FLASK_APP=app.py
 export FLASK_ENV=development
 ```
+
