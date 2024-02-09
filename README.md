@@ -40,3 +40,23 @@ terraform init
 terraform plan
 terraform apply -auto-approve
 ```
+
+## push image over to gcp-artifact-registry
+
+```
+gcloud auth configure-docker us-east1-docker.pkg.dev
+
+docker tag web_todo_image:latest us-east1-docker.pkg.dev/gorgias-devbro/todo-website/web_todo_image:latest
+docker push us-east1-docker.pkg.dev/gorgias-devbro/todo-website/web_todo_image:latest
+```
+
+## k8s
+make sure gcloud is installed then login
+make sure kubectl is installed
+
+you will need these commands:
+```
+gcloud components install gke-gcloud-auth-plugin
+gcloud container clusters get-credentials gorgias-devbro-gke --region=us-east1
+kubectl config view
+```
