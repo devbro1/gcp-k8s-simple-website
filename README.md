@@ -44,6 +44,8 @@ terraform apply -auto-approve
 ## push image over to gcp-artifact-registry
 
 ```
+docker build -t web_todo_image -f web.Dockerfile .
+
 gcloud auth configure-docker us-east1-docker.pkg.dev
 
 docker tag web_todo_image:latest us-east1-docker.pkg.dev/gorgias-devbro/todo-website/web_todo_image:latest
@@ -63,6 +65,7 @@ kubectl config view
 
 to create your stuff in the cluster:
 ```
+kubectl apply -f db-primary.yml
 kubectl apply -f frontend-website.yml
 kubectl get services
 kubectl get pods
@@ -71,4 +74,10 @@ kubectl get pods
 to remove stuff in the cluster:
 ```
 kubectl delete -f frontend-website.yml
+```
+
+other useful commnads:
+```
+kubectl exec --stdin --tty postgresql-0 -- /bin/bash
+kubectl logs POD_NAME
 ```

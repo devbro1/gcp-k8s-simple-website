@@ -57,6 +57,8 @@ spec:
           value: "0.0.0.0"
         - name: FLASK_RUN_PORT
           value: "80"
+        - name: DATABASE_URL
+          value: "postgresql+psycopg2://myuser:mypassword@postgresql/tododb"
         # - name: DATABASE_URL
         #   valueFrom:
         #     secretKeyRef:
