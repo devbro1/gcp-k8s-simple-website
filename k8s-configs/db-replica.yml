@@ -1,0 +1,59 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgresql-replica
+spec:
+  selector:
+    app: postgresql-replica
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
+  type: ClusterIP  # This line has been added to restrict access to the service
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgresql-replica
+spec:
+  serviceName: "postgresql-replica"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgresql-replica
+  template:
+    metadata:
+      labels:
+        app: postgresql-replica
+    spec:
+      containers:
+        - name: postgresql-replica
+          image: postgres:latest
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_DB
+              value: tododb
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: db-credentials
+                  key: username
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-credentials
+                  key: password
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          volumeMounts:
+            - name: postgresql-replica-persistent-storage
+              mountPath: /var/lib/postgresql/data
+  volumeClaimTemplates:
+    - metadata:
+        name: postgresql-replica-persistent-storage
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 10Gi
