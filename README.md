@@ -60,3 +60,15 @@ gcloud components install gke-gcloud-auth-plugin
 gcloud container clusters get-credentials gorgias-devbro-gke --region=us-east1
 kubectl config view
 ```
+
+to create your stuff in the cluster:
+```
+kubectl apply -f frontend-website.yml
+kubectl get services
+kubectl get pods
+```
+
+to remove stuff in the cluster:
+```
+kubectl delete -f frontend-website.yml
+```

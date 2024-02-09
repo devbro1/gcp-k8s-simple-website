@@ -1,0 +1,74 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: todo-website-service
+  labels:
+    app: todo-website
+spec:
+  ports:
+    - port: 80
+  selector:
+    app: todo-website
+    tier: frontend
+  type: LoadBalancer
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: todo-website-pv-claim
+  labels:
+    app: todo-website
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: todo-website-deployment
+  labels:
+    app: todo-website
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: todo-website
+      tier: frontend
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: todo-website
+        tier: frontend
+    spec:
+      containers:
+      - image: us-east1-docker.pkg.dev/gorgias-devbro/todo-website/web_todo_image:latest
+        name: todo-website
+        env:
+        - name: FLASK_ENV
+          value: "production"
+        - name: FLASK_APP
+          value: "app.py"
+        - name: FLASK_RUN_HOST
+          value: "0.0.0.0"
+        - name: FLASK_RUN_PORT
+          value: "80"
+        # - name: DATABASE_URL
+        #   valueFrom:
+        #     secretKeyRef:
+        #       name: db-details
+        #       key: url
+        ports:
+        - containerPort: 80
+          name: todo-website
+        volumeMounts:
+        - name: todo-website-persistent-storage
+          mountPath: /usr/src/app/instance
+      volumes:
+      - name: todo-website-persistent-storage
+        persistentVolumeClaim:
+          claimName: todo-website-pv-claim
