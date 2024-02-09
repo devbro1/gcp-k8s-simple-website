@@ -80,4 +80,7 @@ other useful commnads:
 ```
 kubectl exec --stdin --tty postgresql-0 -- /bin/bash
 kubectl logs POD_NAME
+kubectl get secret db-credentials -o jsonpath='{.data}'
 ```
+
+note: if you use above command to get secrets, values need to be base64 decoded.
