@@ -32,3 +32,11 @@ export FLASK_APP=app.py
 export FLASK_ENV=development
 ```
 
+## terraform
+once gcloud is installed, run `gcloud auth application-default login` to login.
+after that you can do:
+```
+terraform init
+terraform plan
+terraform apply -auto-approve
+```
