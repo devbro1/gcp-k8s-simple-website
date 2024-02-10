@@ -103,8 +103,17 @@ note: secrets values need to be base64 decoded.
 ## how to fully deply
 step by step orders:
 
-1. install all required programs
-2. use terraform to create all resources
-3. create docker image
-4. push docker image to GCP:AR
-5. use kubectl to create all resources
+0. install all required programs
+1. use terraform to create all resources
+2. create docker image and push to GCP:AR
+3. use kubectl to create all resources
+
+you can also use `deployment_script.sh` to do all of the above.
+
+
+## Why I picked each tool
+terraform: the standard tool for IaC, I also wanted to see all details for creating all resources properly without any abstraction.
+
+kubectl: standard tool for managing kubernetes cluster
+
+docker desktop: I use windows for my local machine, so it is the tool of my choice.
