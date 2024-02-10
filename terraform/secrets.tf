@@ -30,7 +30,7 @@ resource "kubernetes_secret" "db_secrets" {
   data = {
     username = "dbuser1"
     password = random_password.db_password.result
-    url = "postgresql+psycopg2://dbuser1:${urlencode(random_password.db_password.result)}@postgresql/tododb"
-    url_replica = "postgresql+psycopg2://dbuser1:${urlencode(random_password.db_password.result)}@postgresql_replica/tododb"
+    url = "postgresql+psycopg2://dbuser1:${urlencode(random_password.db_password.result)}@postgres-main/tododb"
+    url_replica = "postgresql+psycopg2://dbuser1:${urlencode(random_password.db_password.result)}@postgres-replica/tododb"
   }
 }

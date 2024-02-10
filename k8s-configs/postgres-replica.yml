@@ -1,0 +1,81 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-replica
+spec:
+  selector:
+    app: postgres-replica
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
+  type: ClusterIP  # This line has been added to restrict access to the service
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres-replica
+spec:
+  serviceName: "postgres-replica"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres-replica
+  template:
+    metadata:
+      labels:
+        app: postgres-replica
+    spec:
+      containers:
+        - name: postgres-replica
+          image: postgres:14-alpine
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_MASTER_HOST
+              value: postgres-main
+            - name: POSTGRES_DB
+              value: tododb
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: db-credentials
+                  key: username
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-credentials
+                  key: password
+            - name: PGUSER
+              valueFrom:
+                secretKeyRef:
+                  name: db-credentials
+                  key: username
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-credentials
+                  key: password
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          command: ["/bin/bash","-c"]
+          args:
+            - echo "start initial backup pull"
+
+              pg_basebackup --pgdata=/var/lib/postgresql/data/pgdata -R --slot=replication_slot --host=postgres-main --port=5432
+
+              echo "finished initial backup pull"
+
+              docker-entrypoint.sh postgres
+
+          volumeMounts:
+            - name: postgres-replica-persistent-storage
+              mountPath: /var/lib/postgresql/data
+  volumeClaimTemplates:
+    - metadata:
+        name: postgres-replica-persistent-storage
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 10Gi

@@ -78,9 +78,17 @@ kubectl delete -f frontend-website.yml
 
 other useful commnads:
 ```
-kubectl exec --stdin --tty postgresql-0 -- /bin/bash
+kubectl exec --stdin --tty postgres-replica-0 -- /bin/bash
 kubectl logs POD_NAME
 kubectl get secret db-credentials -o jsonpath='{.data}'
 ```
 
 note: if you use above command to get secrets, values need to be base64 decoded.
+
+
+## DEV ENV
+to use local dev env use docker-compose.yml to create a local env. if all things are done right, expect replica db to show your changes in read only manner
+
+```
+docker compose -f "docker-compose.yml" up -d --build 
+```
