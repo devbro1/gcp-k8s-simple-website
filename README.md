@@ -5,44 +5,54 @@
 - install [terraform](https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli)
 - install [kubectl](https://kubernetes.io/docs/tasks/tools/)
 - install docker: [docker desktop for windows](https://docs.docker.com/desktop/install/windows-install/)
+- obtain [treats](https://www.amazon.ca/gp/aw/d/B0B4FX74HX)
 
 
 
-# create website docker image
+## create website docker image
 
 command to build the image and running it as a container
 ```
 docker build -t web_todo_image -f web.Dockerfile .
+```
+
+to deploy the image as local container:
+```
 docker stop web_todo_container
 docker rm web_todo_container
 docker run --name web_todo_container -d -p 85:85 -e FLASK_ENV=development  -e FLASK_APP=app.py -e FLASK_RUN_HOST=0.0.0.0 -e FLASK_RUN_PORT=85 web_todo_image
 ```
 
-for local development you need to install packages:
+for local development without using docker:
 ```
+cd todo-website
 pip3 install -r requirements.txt -t ./
+flask run
 ```
 
-NOTE in dev env, it uses sqlite it can be changed to postgresql with `DATABASE_URL` env var
+alternatively you can use docker-compose to create everything for you:
+```
+docker compose -f "docker-compose.yml" up -d --build 
+```
 
-environment variables to set:
-```
-export DATABASE_URL=postgresql://user:password@hostname/database_name
-export FLASK_APP=app.py
-export FLASK_ENV=development
-```
+NOTE: if `DATABASE_URL` env var is not defined then image will use a local sqlite for database.
+
 
 ## terraform
 once gcloud is installed, run `gcloud auth application-default login` to login.
-after that you can do:
+you will need to create a GCS called `tf-states-devbro` manually to save all your states in. If you prefer local state then remove backend.tf.
+
+
+to create all resources:
 ```
 terraform init
 terraform plan
 terraform apply -auto-approve
 ```
+this process will take a while. It is strongly suggested to use treats to distract your cat(s) to make time pass faster.
 
 ## push image over to gcp-artifact-registry
-
+To push images to GCP Artifact Registry. use following commands:
 ```
 docker build -t web_todo_image -f web.Dockerfile .
 
@@ -52,20 +62,21 @@ docker tag web_todo_image:latest us-east1-docker.pkg.dev/gorgias-devbro/todo-web
 docker push us-east1-docker.pkg.dev/gorgias-devbro/todo-website/web_todo_image:latest
 ```
 
-## k8s
-make sure gcloud is installed then login
-make sure kubectl is installed
+## Managing kubernetes
+Make sure gcloud and kubectl are installed.
 
-you will need these commands:
+Commands to connect kubectl to kubernetes cluster:
 ```
 gcloud components install gke-gcloud-auth-plugin
 gcloud container clusters get-credentials gorgias-devbro-gke --region=us-east1
 kubectl config view
 ```
 
-to create your stuff in the cluster:
+
+commands to create all resouces:
 ```
-kubectl apply -f db-primary.yml
+kubectl apply -f postgres-primary.yml
+kubectl apply -f postgres-replica.yml
 kubectl apply -f frontend-website.yml
 kubectl get services
 kubectl get pods
@@ -74,7 +85,11 @@ kubectl get pods
 to remove stuff in the cluster:
 ```
 kubectl delete -f frontend-website.yml
+kubectl delete -f postgres-primary.yml
+kubectl delete -f postgres-replica.yml
 ```
+
+NOTE: there are storages created as part of these resources. deleting and recreating resouces will not destroy these storages.
 
 other useful commnads:
 ```
@@ -83,12 +98,13 @@ kubectl logs POD_NAME
 kubectl get secret db-credentials -o jsonpath='{.data}'
 ```
 
-note: if you use above command to get secrets, values need to be base64 decoded.
+note: secrets values need to be base64 decoded.
 
+## how to fully deply
+step by step orders:
 
-## DEV ENV
-to use local dev env use docker-compose.yml to create a local env. if all things are done right, expect replica db to show your changes in read only manner
-
-```
-docker compose -f "docker-compose.yml" up -d --build 
-```
+1. install all required programs
+2. use terraform to create all resources
+3. create docker image
+4. push docker image to GCP:AR
+5. use kubectl to create all resources
